@@ -28,6 +28,9 @@ except:
 
 import time
 
+strategy = tf.distribute.MirroredStrategy()
+print('Number of devices: {}'.format(strategy.num_replicas_in_sync))
+
 
 def build_model(config):
     """ Build the model with the pretrained weights. In this example
@@ -44,27 +47,31 @@ def build_model(config):
 def run_finetuning(config):
 
     # Load the model with the new layers to finetune
-    detr = build_model(config)
+    with strategy.scope():
+        detr = build_model(config)
+            # Setup the optimziers and the trainable variables
+        optimzers = setup_optimizers(detr, config)
 
     # Load the training and validation dataset
     train_dt, coco_class_names = load_coco_dataset(
-        config, config.batch_size, augmentation=True, img_dir="train2017", ann_fil="annotations/instances_train2017.json")
+        config, config.batch_size, augmentation=True, img_dir="train2017", 
+        ann_file="annotations_trainval2017/annotations_trainval2017/annotations/instances_train2017.json")
     valid_dt, _ = load_coco_dataset(
-        config, 1, augmentation=False, img_dir="val2017", ann_fil="annotations/instances_val2017.json")
+        config, 1, augmentation=False, img_dir="val2017", 
+        ann_file="annotations_trainval2017/annotations/instances_val2017.json")
 
     # Train the backbone and the transformers
     # Check the training_config file for the other hyperparameters
     config.train_backbone = True
     config.train_transformers = True
 
-    # Setup the optimziers and the trainable variables
-    optimzers = setup_optimizers(detr, config)
+
 
     # Run the training for 100 epochs
-    for epoch_nb in range(100):
-        training.eval(detr, valid_dt, config, coco_class_names, evaluation_step=200)
-        training.fit(detr, train_dt, optimzers, config, epoch_nb, coco_class_names)
-
+    for epoch_nb in range(2):
+        training.fit(detr, train_dt, optimzers, config, epoch_nb, coco_class_names, valid_dt)
+#         if epoch_step % 100 == 0:
+#             training.eval(detr, valid_dt, config, coco_class_names, evaluation_step=200)
 
 if __name__ == "__main__":
 
@@ -81,8 +88,6 @@ if __name__ == "__main__":
         
     # Run training
     run_finetuning(config)
-
-
 
 
 
