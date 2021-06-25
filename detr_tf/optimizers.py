@@ -83,9 +83,9 @@ def setup_optimizers(model, config):
     disable_batchnorm_training(model)
 
     # Optimizers
-    backbone_optimizer = tf.keras.optimizers.Adam(learning_rate=get_backbone_learning_rate, clipnorm=config.gradient_norm_clipping)
-    transformers_optimizer = tf.keras.optimizers.Adam(learning_rate=get_transformers_learning_rate, clipnorm=config.gradient_norm_clipping)
-    nlayers_optimizer = tf.keras.optimizers.Adam(learning_rate=get_nlayers_learning_rate, clipnorm=config.gradient_norm_clipping)
+    backbone_optimizer = tf.keras.optimizers.Adam(learning_rate=get_backbone_learning_rate)
+    transformers_optimizer = tf.keras.optimizers.Adam(learning_rate=get_transformers_learning_rate)
+    nlayers_optimizer = tf.keras.optimizers.Adam(learning_rate=get_nlayers_learning_rate)
 
     # Set trainable variables
 

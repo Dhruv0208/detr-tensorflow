@@ -27,12 +27,12 @@ def run_train_step(model, images, t_bbox, t_class, optimizers, config):
 
 @tf.function
 def run_val_step(model, images, t_bbox, t_class, config):
-    m_outputs = model(images, training=False)
+    m_outputs = model(images, training=True)
     total_loss, log = get_losses(m_outputs, t_bbox, t_class, config)
     return m_outputs, total_loss, log
 
 
-def fit(model, train_dt, optimizers, config, epoch_nb, class_names):
+def fit(model, train_dt, optimizers, config, epoch_nb, class_names, valid_dt):
     """ Train the model for one epoch
     """
     # Aggregate the gradient for bigger batch and better convergence
@@ -61,7 +61,8 @@ def fit(model, train_dt, optimizers, config, epoch_nb, class_names):
             if config.log:
                 wandb.log({f"train/{k}":log[k] for k in log}, step=config.global_step)
             t = time.time()
-        
+        if epoch_step % 500 == 0:
+            eval(model, valid_dt, config, class_names, evaluation_step=200)
         config.global_step += 1
 
 
