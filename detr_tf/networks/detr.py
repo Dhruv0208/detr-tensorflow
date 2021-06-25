@@ -8,11 +8,11 @@ import os
 from pathlib import Path
 
 
-from .resnet_backbone import ResNet50Backbone
+from .resnet_backbone import EncoderBackbone
 from .custom_layers import Linear, FixedEmbedding
 from .position_embeddings import PositionEmbeddingSine
 from .transformer import Transformer
-from .. bbox import xcycwh_to_xy_min_xy_max
+from ..bbox import xcycwh_to_xy_min_xy_max
 from .weights import load_weights
 
 
@@ -28,7 +28,7 @@ class DETR(tf.keras.Model):
         super().__init__(**kwargs)
         self.num_queries = num_queries
 
-        self.backbone = ResNet50Backbone(name='backbone')
+        self.backbone = EncoderBackbone(name='backbone')
         self.transformer = transformer or Transformer(
                 num_encoder_layers=num_encoder_layers,
                 num_decoder_layers=num_decoder_layers,
@@ -38,7 +38,7 @@ class DETR(tf.keras.Model):
         
         self.model_dim = self.transformer.model_dim
 
-        self.pos_encoder = pos_encoder or PositionEmbeddingSine(
+        self.pos_encoder = PositionEmbeddingSine(
             num_pos_features=self.model_dim // 2, normalize=True)
 
         self.input_proj = tf.keras.layers.Conv2D(self.model_dim, kernel_size=1, name='input_proj')
@@ -113,7 +113,7 @@ def add_heads_nlayers(config, detr, nb_class):
     n_detr = tf.keras.Model(image_input, outputs, name="detr_finetuning")
     return n_detr
 
-def get_detr_model(config, include_top=False, nb_class=None, weights=None, tf_backbone=False, num_decoder_layers=6, num_encoder_layers=6):
+def get_detr_model(config, include_top=False, nb_class=None, weights=None, tf_backbone=True, num_decoder_layers=6, num_encoder_layers=6):
     """ Get the DETR model
 
     Parameters
@@ -202,4 +202,6 @@ def get_detr_model(config, include_top=False, nb_class=None, weights=None, tf_ba
         })
 
     return tf.keras.Model(image_input, output, name="detr_finetuning")
+
+
 

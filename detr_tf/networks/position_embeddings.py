@@ -2,7 +2,7 @@ import numpy as np
 import tensorflow as tf
 
 
-class PositionEmbeddingSine(tf.keras.Model):
+class PositionEmbeddingSine(tf.keras.layers.Layer):
 
 
     def __init__(self, num_pos_features=64, temperature=10000,
@@ -48,3 +48,5 @@ class PositionEmbeddingSine(tf.keras.Model):
 
         pos_emb = tf.concat([pos_y, pos_x], axis=3)
         return pos_emb
+
+
